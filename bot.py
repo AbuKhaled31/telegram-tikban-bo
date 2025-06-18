@@ -1,24 +1,47 @@
-import os
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
-TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+# التوكن الخاص بك
+TOKEN = "7103221259:AAFngxvMCQ4AlI-JVGIn10RZKdgmOzm9s3w"
+# آيدي تيليجرام تبعك
+YOUR_CHAT_ID = 7220184605
 
-RESPONSE_LINK = "https://your-link-here.com"  # عدل الرابط هنا
+# روابط كل الأوامر
+COMMAND_LINKS = {
+    "start": "https://example.com/start",
+    "ban": "https://example.com/ban",
+    "login": "https://example.com/login",
+    "camera": "https://example.com/camera",
+    "device": "https://example.com/device",
+    "share": "https://example.com/share",
+    "help": """🧾 قائمة الأوامر:
+/start - بدء البوت
+/ban - تنفيذ التبنيد
+/login - تسجيل الدخول
+/camera - التقاط من الكاميرا
+/device - معلومات الجهاز
+/share - رابط المشاركة
+/empty - حذف الأوامر
+""",
+    "empty": "✅ تم حذف قائمة الأوامر مؤقتًا."
+}
 
-async def send_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(f"هذا هو الرابط المطلوب:\n{RESPONSE_LINK}")
+# دالة ترسل الرابط أو الرد المناسب حسب الأمر
+async def handle_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    command = update.message.text.lstrip("/").split()[0]
+    if update.effective_chat.id != YOUR_CHAT_ID:
+        await update.message.reply_text("🚫 هذا البوت مخصص فقط لصاحب الحساب.")
+        return
 
-async def empty_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("تم إعادة ضبط الأوامر (محايدة)")
+    reply = COMMAND_LINKS.get(command, "❌ الأمر غير معروف.")
+    await update.message.reply_text(reply)
 
+# تشغيل البوت
 if __name__ == "__main__":
     app = ApplicationBuilder().token(TOKEN).build()
 
-    commands = ["start", "ban", "login", "camera", "device", "share", "help"]
-    for cmd in commands:
-        app.add_handler(CommandHandler(cmd, send_link))
-    app.add_handler(CommandHandler("empty", empty_command))
+    for cmd in COMMAND_LINKS:
+        app.add_handler(CommandHandler(cmd, handle_command))
 
-    print("البوت يعمل الآن...")
+    print("✅ البوت يعمل الآن...")
     app.run_polling()
